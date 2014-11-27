@@ -1,38 +1,102 @@
-<!doctype html>
+<!doctype  html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Kevx.github.com by kevx</title>
+    <head>
+        <meta  charset="utf-8">
+        <meta  http-equiv="X-UA-Compatible"  content="chrome=1">
+        <title>Kevx.github.com  by  kevx</title>
+        <link  rel="stylesheet"  href="stylesheets/styles.css">
+        <link  rel="stylesheet"  href="stylesheets/pygment_trac.css">
+        <script  src="javascripts/scale.fix.js"></script>
+        <script  src="javascripts/markdown.min.js"></script>
+        <script  src="javascripts/config.js"></script>
+        <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+        <meta  name="viewport"  content="width=device-width,  initial-scale=1,  user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>Kevx.github.com</h1>
+                <p></p>
+                <p  class="view"><a  href="https://github.com/kevx">View  the  Project  on  GitHub  <small>kevx</small></a></p>
+                <ul>
+                    <li  class="single"><a  href="https://github.com/kevx/kevx.github.com">View  On  <strong>GitHub</strong></a></li>
+                </ul>
+            </header>
+            <section>
+                <h1>
+                    <a  id="kevxgithubcom"  class="anchor"  href="#kevxgithubcom"  aria-hidden="true">
+                        <span  class="octicon  octicon-link"></span>
+                    </a>Blog List
+                </h1>
+                <div id="content">
+                    <div id="main"></div>
+                </div>
+            </section>
+            <section>
+                <a href="javascript:void(0);" class="zip_download_link" id="pagepre"><b>上一页</b></a>
+                &nbsp;&nbsp;&nbsp;
+                <a href="javascript:void(0);" class="zip_download_link" id="pagenxt"><b>下一页</b></a>
+                <span  style="float: right;" id="total">1/1</span>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;  Theme  by  <a  href="https://github.com/orderedlist">orderedlist</a></p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            var h = location.search;
+            var page = 1;
+            var pagesz = CFG.item_per_page;
+            var items = CFG.items;
+            var totalpage = Math.ceil(items.length / CFG.item_per_page);
+            
+            
+            if (h != null && h.length > 1) {
+                var ps = h.substring(h.indexOf("?page=")+6);
+                page = parseInt(ps);
+                if (pagesz * page > items.length) {
+                    page = 1;
+                }
+            }
+            var start = (page - 1) * pagesz;
+            var limit = Math.min(start + pagesz, items.length);
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+            for(var i = start; i < limit; i++) {
+                $.ajax({
+                   url: 'markdown/' + items[i],
+                   xhrFields: {
+                      withCredentials: true
+                   }
+                }).done(function( data ) {
+                    var s = markdown.toHTML(data);
+                    var div = '<div>' + s + '</div>';
+                    $('#content').append(div);
+                });
+            }
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header class="without-description">
-        <h1>Kevx.github.com</h1>
-        <p></p>
-        <p class="view"><a href="https://github.com/kevx">View the Project on GitHub <small>kevx</small></a></p>
-        <ul>
-          <li class="single"><a href="https://github.com/kevx/kevx.github.com">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
-<a id="kevxgithubcom" class="anchor" href="#kevxgithubcom" aria-hidden="true"><span class="octicon octicon-link"></span></a>kevx.github.com</h1>
-      </section>
-    </div>
-    <footer>
-      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
-    </footer>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+            $('#pagepre').click(function() {
+                var p = page - 1;
+                if (p <= 0) {
+                    p = 1;
+                    return;
+                }
+                location.replace('index.html?page=' + p);
+            });
+
+            $('#pagenxt').click(function() {
+                var p = page + 1;
+                if (p > totalpage) {
+                    p = totalpage;
+                    return;
+                }
+                location.replace('index.html?page=' + p);
+            });
+
+            $('#total').html(page + '/' + totalpage);
+        </script>
+    </body>
 </html>
