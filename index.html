@@ -6,7 +6,7 @@
         <title>Kevx's Blog @GitHub.io</title>
         <link  rel="stylesheet"  href="stylesheets/styles.css">
         <link  rel="stylesheet"  href="stylesheets/pygment_trac.css">
-        <link  rel="stylesheet"  href="stylesheets/highlight.min.css">
+        <link  rel="stylesheet"  href="stylesheets/github.css">
         <script  src="javascripts/scale.fix.js"></script>
         <script  src="javascripts/markdown.min.js"></script>
         <script  src="javascripts/config.js?t=12262014"></script>
@@ -71,6 +71,9 @@
                     var s = markdown.toHTML(data);
                     var div = '<div>' + s + '</div>';
                     $('#content').append(div);
+                    $('pre code').each(function(i, block) {
+                        hljs.highlightBlock(block);
+                    });
                 });
             }
 
@@ -93,11 +96,6 @@
             });
 
             $('#total').html(page + '/' + totalpage);
-            $(document).ready(function() {
-                $('pre code').each(function(i, block) {
-                    hljs.highlightBlock(block);
-                });
-            });
 
         </script>
     </body>
