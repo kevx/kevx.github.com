@@ -6,10 +6,12 @@
         <title>Kevx's Blog @GitHub.io</title>
         <link  rel="stylesheet"  href="stylesheets/styles.css">
         <link  rel="stylesheet"  href="stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="stylesheets/highlight.min.css">
         <script  src="javascripts/scale.fix.js"></script>
         <script  src="javascripts/markdown.min.js"></script>
         <script  src="javascripts/config.js?t=12262014"></script>
         <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+        <script  src="javascripts/highlight.min.js"></script>
         <meta  name="viewport"  content="width=device-width,  initial-scale=1,  user-scalable=no">
         <!--[if  lt  IE  9]>
         <script  src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -26,11 +28,6 @@
                 </ul>
             </header>
             <section>
-                <h1>
-                    <a  id="kevxgithubcom"  class="anchor"  href="#kevxgithubcom"  aria-hidden="true">
-                        <span  class="octicon  octicon-link"></span>
-                    </a>Blog List
-                </h1>
                 <div id="content">
                     <div id="main"></div>
                 </div>
@@ -96,6 +93,12 @@
             });
 
             $('#total').html(page + '/' + totalpage);
+            $(document).ready(function() {
+                $('pre code').each(function(i, block) {
+                    hljs.highlightBlock(block);
+                });
+            });
+
         </script>
     </body>
 </html>
