@@ -10,11 +10,11 @@
         <script  src="javascripts/scale.fix.js"></script>
         <script  src="javascripts/markdown.min.js"></script>
         <script  src="javascripts/config.js?t=12262014"></script>
-        <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+        <script  src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
         <script  src="javascripts/highlight.min.js"></script>
         <meta  name="viewport"  content="width=device-width,  initial-scale=1,  user-scalable=no">
         <!--[if  lt  IE  9]>
-        <script  src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <script  src="javascripts/html5-shiv.js"></script>
         <![endif]-->
     </head>
     <body>
@@ -44,59 +44,6 @@
             <p>Hosted  on  GitHub  Pages  &mdash;  Theme  by  <a  href="https://github.com/orderedlist">orderedlist</a></p>
         </footer>
         <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
-        <script type="text/javascript">
-            var h = location.search;
-            var page = 1;
-            var pagesz = RES.item_per_page;
-            var items = RES.items;
-            var totalpage = Math.ceil(items.length / RES.item_per_page);
-            
-            if (h != null && h.length > 1) {
-                var ps = h.substring(h.indexOf("?page=")+6);
-                page = parseInt(ps);
-                if (pagesz * page > items.length) {
-                    page = 1;
-                }
-            }
-            var start = (page - 1) * pagesz;
-            var limit = Math.min(start + pagesz, items.length);
-
-            for(var i = start; i < limit; i++) {
-                $.ajax({
-                   url: 'markdown/' + items[i]['file'],
-                   xhrFields: {
-                      withCredentials: true
-                   }
-                }).done(function( data ) {
-                    var s = markdown.toHTML(data);
-                    var div = '<div>' + s + '</div>';
-                    $('#content').append(div);
-                    $('pre code').each(function(i, block) {
-                        hljs.highlightBlock(block);
-                    });
-                });
-            }
-
-            $('#pagepre').click(function() {
-                var p = page - 1;
-                if (p <= 0) {
-                    p = 1;
-                    return;
-                }
-                location.replace('index.html?page=' + p);
-            });
-
-            $('#pagenxt').click(function() {
-                var p = page + 1;
-                if (p > totalpage) {
-                    p = totalpage;
-                    return;
-                }
-                location.replace('index.html?page=' + p);
-            });
-
-            $('#total').html(page + '/' + totalpage);
-
-        </script>
+        <script  src="javascripts/main.js"></script>
     </body>
 </html>
