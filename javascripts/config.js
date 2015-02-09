@@ -3,22 +3,22 @@ var RES = {
     'items': [
         {
             'file': 'java_invoke_chain.md',
-            'title': '',
+            'title': 'Java调用链跟踪',
             'gmtCreate': '2014/12/26'
         },
         {
             'file': 'hive_on_yarn.md',
-            'title': '',
+            'title': 'Hive On Yarn',
             'gmtCreate': '2014/12/11'
         },
         {
             'file': 'hadoop_seqfile_append.md',
-            'title': '',
+            'title': 'Hadoop文件追加模式',
             'gmtCreate': '2014/12/02'
         },
         {
             'file': 'services_center.md',
-            'title': '',
+            'title': '服务化的一些记录',
             'gmtCreate': '2015/02/06'
         }
     ]
