@@ -1,9 +1,5 @@
 console.log('loaded!');
 
-function sortByDate(a,b) {
-    return Date.parse(b['gmtCreate']) - Date.parse(a['gmtCreate']);
-}
-
 var h = location.search;
 var page = 1;
 var pagesz = RES.item_per_page;

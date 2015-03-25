@@ -18,8 +18,17 @@ var RES = {
         },
         {
             'file': 'services_center.md',
-            'title': '服务化的一些记录',
+            'title': '堆糖服务化的一些记录',
             'gmtCreate': '2015/02/06'
-        }
+        },
+        {
+            'file': 'rt_optmizing.md',
+            'title': 'Web应用响应平滑与RPC优化',
+            'gmtCreate': '2015/03/16'
+        },
     ]
 };
+
+function sortByDate(a,b) {
+    return Date.parse(b['gmtCreate']) - Date.parse(a['gmtCreate']);
+}
