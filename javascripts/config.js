@@ -26,6 +26,17 @@ var RES = {
             'title': 'Web应用响应平滑与RPC优化',
             'gmtCreate': '2015/03/16'
         },
+        {
+            'file': 'dt_dataplatform.md',
+            'title': '数据平台核心与规划',
+            'gmtCreate': '2015/04/01'
+        },
+        {
+            'file': 'hdfs_atomic.md',
+            'title': 'HDFS原子性与一致性',
+            'gmtCreate': '2015/04/21'
+        }
+
     ]
 };
 
