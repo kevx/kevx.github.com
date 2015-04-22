@@ -7,6 +7,11 @@ var RES = {
             'gmtCreate': '2014/12/26'
         },
         {
+            'file': 'dt_base_framework.md',
+            'title': '技术体系切换与基础框架构建',
+            'gmtCreate': '2015/01/10'
+        },
+        {
             'file': 'hive_on_yarn.md',
             'title': 'Hive On Yarn',
             'gmtCreate': '2014/12/11'
