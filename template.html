@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>template</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<body>
+		<div class="container">
+    		<h2>Template</h2>
+			<div class="row clearfix">
+            	<div class="col-md-4 column">
+	        	</div>
+			</div>
+		</div>
+		<script  src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+		<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+		<script src="/javascripts/Chart.min.js"></script>
+		<script type="text/javascript">
+			String.prototype.format = function(args) {
+			    var result = this;
+			    if (arguments.length > 0) {    
+			        if (arguments.length == 1 && typeof (args) == "object") {
+			            for (var key in args) {
+			                if(args[key]!=undefined){
+			                    var reg = new RegExp("({" + key + "})", "g");
+			                    result = result.replace(reg, args[key]);
+			                }
+			            }
+			        }
+			        else {
+			            for (var i = 0; i < arguments.length; i++) {
+			                if (arguments[i] != undefined) {
+			                    var reg = new RegExp("({[" + i + "]})", "g");
+			                    result = result.replace(reg, arguments[i]);
+			                }
+			            }
+			        }
+			    }
+			    return result;
+			}
+	
+			/*
+			$.ajax({
+		       url: '/xxx',
+		       dataType: 'json',
+		       type: 'get',
+		       xhrFields: {
+		          withCredentials: true
+		       }
+		    }).done(function( ret ) {
+		    });
+			*/
+		</script>
+	</body>
+</html>
