@@ -32,7 +32,7 @@ var RES = {
             'gmtCreate': '2015/03/16'
         },
         {
-            'file': 'dt_dataplatform.md',
+            'file': 'dt_dp.md',
             'title': '数据平台核心与规划',
             'gmtCreate': '2015/04/01'
         },
