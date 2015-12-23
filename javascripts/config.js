@@ -39,7 +39,7 @@ var RES = {
         {
             'file': 'hdfs_atomic.md',
             'title': 'HDFS原子性与一致性',
-            'gmtCreate': '2015/04/21'
+            'gmtCreate': '2015/03/21'
         }
 
     ]
