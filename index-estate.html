@@ -3,7 +3,7 @@
     <head>
         <meta  charset="utf-8">
         <meta  http-equiv="X-UA-Compatible"  content="chrome=1">
-        <title>Kevx's Blog @GitHub.io</title>
+        <title>iEstate</title>
         <link  rel="stylesheet"  href="stylesheets/styles.css">
         <link  rel="stylesheet"  href="stylesheets/pygment_trac.css">
         <link  rel="stylesheet"  href="stylesheets/monokai_sublime.css">
@@ -20,12 +20,13 @@
     <body>
         <div  class="wrapper">
             <header  class="without-description">
-                <h1>kevx's Blog</h1>
-                <p>平台架构 / 框架设计 / 大数据 / Java核心研发 / kevx@outlook.com</p>
-                <p  class="view"><a  href="https://github.com/kevx">View  the  Project  on  GitHub  <small>kevx</small></a></p>
+                <h1>kevx's iEstate</h1>
+                <p>AA / BB / CC / DD / kevx@outlook.com</p>
+                <p  class="view"><a  href="#">View  the  Project  on  GitHub  <small>kevx</small></a></p>
                 <ul>
                     <li  class="single"><a  href="/list.html">文章  
-                    <strong>列表</strong></a></li>                </ul>
+                    <strong>列表</strong></a></li>
+                </ul>
             </header>
             <section>
                 <div id="content">
@@ -37,20 +38,19 @@
             <section>
                 <p></p>
             </section>
-            
         </div>
         <footer>
-            <p>Hosted  on  GitHub  Pages  &mdash;  Theme  by  <a  href="https://github.com/orderedlist">orderedlist</a></p>
+            <p>Theme  by  <a  href="https://github.com/orderedlist">orderedlist</a></p>
         </footer>
         <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
-        <script  src="javascripts/config.js"></script>
+        <script  src="javascripts/config-estate.js"></script>
         <script type="text/javascript">
             var items = RES.items.sort(sortByDate);
             var mainhtml = '';
             for(var i = 0; i < items.length; i++) {
                 var it = items[i];
                 mainhtml += 
-                '<h4><a href="/index.html?page=' + 
+                '<h4><a href="/index-estate.html?page=' + 
                 (i+1) + '">' + it['title'] + '</a></h4>';
             }
             $('#main').html(mainhtml);

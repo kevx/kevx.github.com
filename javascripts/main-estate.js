@@ -18,7 +18,7 @@ var limit = Math.min(start + pagesz, items.length);
 
 for(var i = start; i < limit; i++) {
     $.ajax({
-       url: 'data/' + items[i]['file'],
+       url: 'data-estate/' + items[i]['file'],
        xhrFields: {
           withCredentials: true
        }
@@ -38,7 +38,7 @@ $('#pagepre').click(function() {
         p = 1;
         return;
     }
-    location.replace('index.html?page=' + p);
+    location.replace('detail-estate.html?page=' + p);
 });
 
 $('#pagenxt').click(function() {
@@ -47,7 +47,7 @@ $('#pagenxt').click(function() {
         p = totalpage;
         return;
     }
-    location.replace('index.html?page=' + p);
+    location.replace('detail-estate.html?page=' + p);
 });
 
 $('#total').html(page + '/' + totalpage);

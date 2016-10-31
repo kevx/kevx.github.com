@@ -45,6 +45,12 @@ var RES = {
     ]
 };
 
+var RES_ESTATE = {
+    'item_per_page': 1,
+    'items': [
+    ]
+};
+
 function sortByDate(a,b) {
     return Date.parse(b['gmtCreate']) - Date.parse(a['gmtCreate']);
 }

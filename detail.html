@@ -24,18 +24,20 @@
                 <p>平台架构 / 框架设计 / 大数据 / Java核心研发 / kevx@outlook.com</p>
                 <p  class="view"><a  href="https://github.com/kevx">View  the  Project  on  GitHub  <small>kevx</small></a></p>
                 <ul>
-                    <li  class="single"><a  href="/idnex.html">文章  
-                    <strong>列表</strong></a></li>                </ul>
+                    <li  class="single"><a  href="/list.html">文章  
+                    <strong>列表</strong></a></li>
+                </ul>
             </header>
             <section>
                 <div id="content">
-                    <div id="main">
-                        <p>文章列表</p>
-                    </div>
+                    <div id="main"></div>
                 </div>
             </section>
             <section>
-                <p></p>
+                <a href="javascript:void(0);" class="zip_download_link" id="pagepre"><b>上一页</b></a>
+                &nbsp;&nbsp;&nbsp;
+                <a href="javascript:void(0);" class="zip_download_link" id="pagenxt"><b>下一页</b></a>
+                <span  style="float: right;" id="total">1/1</span>
             </section>
             
         </div>
@@ -43,17 +45,6 @@
             <p>Hosted  on  GitHub  Pages  &mdash;  Theme  by  <a  href="https://github.com/orderedlist">orderedlist</a></p>
         </footer>
         <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
-        <script  src="javascripts/config.js"></script>
-        <script type="text/javascript">
-            var items = RES.items.sort(sortByDate);
-            var mainhtml = '';
-            for(var i = 0; i < items.length; i++) {
-                var it = items[i];
-                mainhtml += 
-                '<h4><a href="/detail.html?page=' + 
-                (i+1) + '">' + it['title'] + '</a></h4>';
-            }
-            $('#main').html(mainhtml);
-        </script>
+        <script  src="javascripts/main.js"></script>
     </body>
 </html>
