@@ -12,8 +12,8 @@ if (h != null && h.length > 1) {
     var item = null;
     var id = h.substring(h.indexOf("?id=")+4);
     for (var i = 0; i < items.length; i++) {
-        if (e.id == id) {
-            item = e;
+        if (items[i].id == id) {
+            item = items[i];
             currnum = i;
             break;
         }
@@ -48,12 +48,12 @@ if (h != null && h.length > 1) {
     }
 }
 
-$('#pagepre').click(function() {
-    location.replace('index.html?id=' + items[nextnum]['id']);
+$('#pagenxt').click(function() {
+    location.replace('detail.html?id=' + items[nextnum]['id']);
 });
 
-$('#pagenxt').click(function() {
-    location.replace('index.html?id=' + items[prenum]['id']);
+$('#pagepre').click(function() {
+    location.replace('detail.html?id=' + items[prenum]['id']);
 });
 
 $('#total').html(items.length);

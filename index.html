@@ -49,8 +49,8 @@
             for(var i = 0; i < items.length; i++) {
                 var it = items[i];
                 mainhtml += 
-                '<h4><a href="/detail.html?page=' + 
-                (i+1) + '">' + it['title'] + '</a></h4>';
+                '<h4><a href="/detail.html?id=' + 
+                it['id'] + '">' + it['title'] + '</a></h4>';
             }
             $('#main').html(mainhtml);
         </script>
