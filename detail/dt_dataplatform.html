@@ -1,0 +1,125 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>dt_dataplatform</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>数据平台核心与规划</h1>
+<h3>数据平台诞生背景</h3>
+<p>堆糖这一年来业务量增长相当快，这个过程伴随着访问量的井喷和业务复杂性的高度增加，于是开发也好产品也好都面临这样几个问题：</p>
+<ul>
+<li>每天用户到底是怎么玩的</li>
+<li>系统到底是个什么情况</li>
+<li>各类运营数据报表怎么搞</li>
+</ul>
+<p>一个互联网公司如果对自己的用户们是怎么访问，在哪里停留，对什么感兴趣等等这些情况一无所知的话那么这个公司将难以发展下去。数据的重要性已经是大家的共识，不仅仅体现在商业运营层面，在技术架构层面更是重要，例如系统的负载情况，容量剩余，性能瓶颈等，在这个问题上一般人往往喜欢强调监控，但是监控不是空中楼阁而一定是构建在强大的数据基础之上，因此提出数据平台的概念。</p>
+<p>作为一个平台性质的东西就意味着建设和维护的生命周期很长，甚至会伴随着公司一起走完其历史使命。因此不同于一般的项目研发，平台不是随时随地可以推倒重来的设施，其建设论证和选型过程会持续相当长一段时间。</p>
+<p>为了让数据成为核心推动力需要仔细思考整个数据流是什么样子的。
+很显然，一个完整的数据流有源头，采集，传输，计算，存储，以及最后的ETL。</p>
+<p><img alt="" src="/images/user/ddp.jpg" /></p>
+<hr />
+<h3>数据源头</h3>
+<ul>
+<li>原始访问记录数据（如nginx日志）</li>
+<li>应用业务数据日志</li>
+<li>应用系统数据</li>
+<li>在线数据库数据</li>
+</ul>
+<p>数据源最重要的一点是规范化，数据的格式，编码，语义全局标准化，并且一定要能很好的兼容ETL相关的基础设施，否则额外的数据转换将会带来巨大的资源和成本消耗。
+实践上，我们数据统一采用json，并针对各个场景制定了相应的json字段规范，在此基础上提供易用的sdk，直接嵌入到应用，业务开发人员只需要像log4j那样稍作配置即可使用。</p>
+<h3>采集&amp;传输</h3>
+<p>海量数据采集的解决方案常见的有logstash，flume。之前nginx日志也一直是用的logstash进行采集。
+现在flume比较火用的人较多，但是经过一段时间测试发现其存在一些问题并且不能适应公司的实际情况，因此这里并没有采用。</p>
+<p>我们最终选用了kafka，它在性能上是完全没问题的，而且很容易与实时计算对接。更重要的是kafka很早就开始在小范围生产系统上使用过，团队大部分开发对其有一定了解，其文档社区都很成熟，因此长远的计划是将收集链路统一收敛到kafka上。　</p>
+<p>在线数据库数据比较特殊，采用Sqoop 1.4是一个比较好的选择。
+Sqoop 1.4对Hadoop 2.x也是支持的。之所以不选Sqoop 1.9是因为1.9的整体架构与1.4有较大差异，甚至可以认为是完全不同的两个软件，而1.9的各种新功能则是我们所用不到的，基于这个考虑我们仍然用1.4。</p>
+<p>将在线数据库数据导入到HDFS实际上是一个快照的过程，但是在线数据库数据实际上又是在不断变化的，那么究竟应该以什么策略来做这个快照呢？
+这个问题没有标准答案，对于互联网公司的数据库，核心业务表总体上是读多写少（写的话也是插入占多数，更新占少数），因而可以采用增量更新方式，定时导入增量即可。另外冷数据和热数据也可以分成不同的数据集来导入，毕竟热数据总是一小部分，可以极大的减少HDFS数据访问的成本，不用每次都将所有数据都扫描一遍。</p>
+<h5>Kafka集群总体规划</h5>
+<p>核心概念：
+* cluster：一个kafka集群，拥有独立的broker和zk
+* biz：业务类型，代表同一类消息数据
+* topic：跟kafka的topic一一对应</p>
+<p>kafka的核心是broker，所有消息会首先汇总到broker节点，kafka支持多个broker，对于任意一个topic，有且仅有一个leader节点，其它broker节点则做复制，若该broker发生故障kafka会自动选举一个新的leader（基于zk）。</p>
+<p>无论如何单个kafka集群的服务能力是有限的，为了适应业务的发展，我们按照业务类型进行集群分配，某个类型的消息有且仅属于某个kafka集群。</p>
+<p>当某个集群容量快满的时候，就不会再接纳新的业务类型。运维会根据实际情况开启新的集群，这样一来实现了整个系统的横向扩展能力。</p>
+<p>而cluster/biz/topic自身的配置管理，统一通过公司内部公共配置中心来完成（也是基于zk），同时系统层面提供了可视化的管理页面，极大提高了运维效率。</p>
+<hr />
+<h4>计算</h4>
+<p>这里说的计算更多是指实时计算，kafka这种基于消息的中间件跟实时计算是天生一对。本文对于这个主题不做展开，将在后续的文章中再详细阐述。</p>
+<hr />
+<h4>存储</h4>
+<p>海量数据存储似乎没有比HDFS更为合适的了，尽管其也存在不少问题，但是综合来讲是最合适的。所有的数据最终统一存储到HDFS。但是有这样几个挑战是不得不考虑的：</p>
+<ul>
+<li>HDFS容量与业务增长</li>
+<li>大规模HDFS集群运维</li>
+<li>数据规范化</li>
+</ul>
+<p>一旦海量数据的存储的魔盒打开了就再也停不下来，各种想得到的想不到的数据都会如潮水般涌入，对于一个正常发展的互联网公司，数据增长的速度必然是越来越快，一套可量化的容量预估体系是必须的，并且要在平台建设初期就明确下来。</p>
+<p>kafka的海量数据有多种方式进入HDFS，我们采用LinkedIn官方的camus。</p>
+<h5>HDFS集群运维</h5>
+<p>HDFS本身架构设计就综合考量了高性能，高可用，安全性等特性。这几点很大程度上取决于运维的成熟度。</p>
+<ul>
+<li>
+<p>性能：HDFS本身是侧重吞吐量而非响应时间，吞吐量意味对带宽消耗非常厉害，网络基础设施一定要足够强壮，并且如果有可能得话，HDFS集群应该同其他集群做网络隔离（这里并不是说要隔离访问，而是说核心交换机独立部署）。</p>
+</li>
+<li>
+<p>高可用：HDFS文件默认是复制三份并存储到不同得节点上，如果有一个节点挂掉会触发自动复制机制，这里有个潜在问题是当这个事情发生的时候，大量数据的复制可能会造成整个集群拥塞，带宽被吃满，从而集群对外表现为不可用状态。
+因此在节点的网络拓扑结构上需要额外注意这一点。</p>
+</li>
+<li>
+<p>安全性：数据安全重要性不言而喻，很多业务敏感数据不能随意访问，因此HDFS文件的目录规范和权限分配在一开始必须确定并且文档化，权限统一控制。</p>
+</li>
+</ul>
+<hr />
+<h4>ETL</h4>
+<p>当数据都进入HDFS之后，事情并未结束，或者说事情才刚开始。经济上讲钱不流通就是没有价值的，同理数据如果不流通也是没有价值的。</p>
+<p>好在这个时代已经不同于从前的寡头垄断时期，相当数量的开源ETL工具都如雨后春笋般出现，特别是基于Hadoop生态圈的各类开源项目更是五花齐放。如Hive，Spark等。</p>
+<p>在ETL基础上有无数种玩法，最常见的数据报表，数据挖掘，我们当前主要精力在这两个点上，特别是数据报表，承载大量技术和业务的数据需求，为各种决策的提供了强大的辅助。</p>
+<p>各种ETL任务越来越多，管理成本也会随之攀升，因此还需要一个任务管理平台，用来管理和调度这类任务的执行。</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

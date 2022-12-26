@@ -1,0 +1,100 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>build-musl-busybox</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>如何编译基于musl-libc的busybox</h1>
+<p>在云原生环境下很多业务会选择alpine作为基础镜像来构建应用，alpine自身没有使用常规的glibc和相应的coreutils，而是基于musl libc + buysbox组合</p>
+<p>而busybox本身存在着一些问题，有时候会需要修改其代码；官方的构建手册上并没有明确说明如何基于musl来构建，本文主要介绍一种比较可行的方式</p>
+<h4>编译机</h4>
+<p>一般使用常规的x64 linux机器即可，内核版本3.10以上（建议），另外请事先安装好gcc和kernel-header</p>
+<h4>源码准备</h4>
+<p>将musl和busybox源码全部下载到目标机器，体积都不大，每个源码包1兆左右，分别解压到/tmp/busybox和/tmp/musl，源码修改请自行进行，随心所欲</p>
+<h4>构建musl</h4>
+<p>首先我们构建出musl</p>
+<pre><code>cd /tmp/musl
+./configurre --prefix=/tmp/musl
+make
+make install
+PATH=/tmp/musl/bin:$PATH
+export PATH
+</code></pre>
+<p>一般来说这一步基本不会有什么问题</p>
+<h4>准备musl交叉编译环境</h4>
+<pre><code>cd /tmp/musl
+ln -s `which ar` musl-ar
+ln -s `which strip` musl-strip
+#链接linux的头文件目录
+cd /tmp/musl/include
+ln -s /usr/include/linux linux
+ln -s /usr/include/asm asm
+ln -s /usr/include/asm-generic asm-generic
+</code></pre>
+<h4>配置busybox</h4>
+<p>建议使用make menuconfig进行可视化配置，请去掉misc中nand开头的几个工具以及ubi相关的工具，原因是这几个功能需要安装额外的依赖库且一般没人使用这些功能</p>
+<p>（谁会在服务器上使用ubifs呢??）</p>
+<p>另外inetd和ifplugd功能也需要关闭</p>
+<p>开启静态链接'Build static binary'并修改'Cross compiler prefix'的值为'musl-'</p>
+<p>按照官方说法，以下选项也需要确保关闭状态，可在.config中查看</p>
+<pre><code># CONFIG_EXTRA_COMPAT is not set 
+# CONFIG_SELINUX is not set 
+# CONFIG_FEATURE_HAVE_RPC is not set 
+# CONFIG_WERROR is not set 
+# CONFIG_FEATURE_SYSTEMD is not set 
+# CONFIG_FEATURE_VI_REGEX_SEARCH is not set 
+# CONFIG_PAM is not set 
+# CONFIG_FEATURE_INETD_RPC is not set 
+# CONFIG_SELINUXENABLED is not set 
+# CONFIG_FEATURE_MOUNT_NFS is not set
+</code></pre>
+<p>也可以自定义开启或关闭其它的feature</p>
+<p>这样就可以了</p>
+<h4>编译busybox</h4>
+<p>执行make即可</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

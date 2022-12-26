@@ -1,0 +1,87 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>hdfs-atomic</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>HDFS原子性与一致性</h1>
+<p>作为一个使用如此广泛的分布式存储，很多人对HDFS文件的一致性和原子性视而不见，就好像不需要考虑这类问题一样。虽然在实际使用上确实较少遇到这些场景，但是本着严谨的态度出发还是有必要了解其工作机制。</p>
+<h3>原子性</h3>
+<p>在HDFS官方文档上原子操作有这样几种：</p>
+<ul>
+<li>创建文件/目录</li>
+<li>删除</li>
+<li>重命名文件/目录</li>
+</ul>
+<p>这些其实都是非常现实的问题，例如两个应用同时对同一个路径进行创建和写入操作，如果发生不一致的情况将是完全不能接受的，幸好HDFS已经从底层保证了这一点。</p>
+<p>那么HDFS是如何保证这的，就需要研究源码。</p>
+<p>HDFS总体结构是很简约的，由Client和NameNodeRpcServer组成，两者采用Hadoop RPC通信，其中后者就是熟知的NameNode的RPC服务实现，NameNode几乎所有的核心逻辑都在这里。</p>
+<p>以下代码版本以2.5.1的Hadoop为准，以create方法为例</p>
+<pre><code> org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.create
+</code></pre>
+<p>顺着这个方法往下看，可以看到其最终调用了</p>
+<pre><code> org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFile
+</code></pre>
+<p>可以看到里面调用了</p>
+<pre><code> void org.apache.hadoop.hdfs.server.namenode.FSNamesystem.writeLock
+</code></pre>
+<p>继续看代码</p>
+<pre><code> public void writeLock() {
+ this.fsLock.longReadLock().lock();
+ this.fsLock.writeLock().lock();
+ }
+</code></pre>
+<p>writeLock其实是一个标准的JDK的读写锁，回顾一下读写锁的语义：</p>
+<ul>
+<li>当写锁未被占用时，reader均可以获取读锁</li>
+<li>当写锁被占用时，reader均等待直到其释放</li>
+<li>当读锁被占用时，writer等待写锁直到队列前的读锁均被释放</li>
+</ul>
+<p>此时基本上可以得出结论了，这里才是真正发生作用的地方。
+可以看到其它方法，如delete/rename等都是类似的操作模式。</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

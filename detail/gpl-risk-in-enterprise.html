@@ -1,0 +1,94 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>gpl-risk-in-enterprise</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>GPL协议商用风险分析</h1>
+<h4>GPL</h4>
+<p>但凡接触过开源的人都知道GPL协议，协议本身在网上已经有相关解读，这里不再赘述；
+现代的IT科技类企业往往或多或少都依赖基于GPL协议发布的各类软件和组件，尤其是互联网企业，甚至大部分系统都是在开源项目之上构建而成；</p>
+<p>另外一个重要的趋势在于著名的开源软件往往也提供了商用版本和商业支持，商业版包含了许多开源版所不具备的重要功能特性，但费用不菲</p>
+<p>较为有实力的公司往往会在开源软件基础上进行一定的改造，这些改造大体可以分为两类：</p>
+<p>1，问题修复
+2，新功能特性</p>
+<p>第1类改造一般不涉及到公司业务机密，大部分人都会主动将其回馈到开源社区，这也非常符合GPL协议精神</p>
+<p>第2类改造则将是我们重点分析的对象</p>
+<h4>GPL传染性</h4>
+<p>GPL最重要特征在于传染性，如果一个组织或个人修改了GPL软件代码，在软件分发（redistribution）时就必须向用户提供源码；但如果不涉及分发则没有这种要求，例如修改后仅在公司内部使用等。</p>
+<p>随着云计算的兴起，出现了新的挑战：云计算巨头将开源组件以服务方式提供给客户付费使用，在此过程中开源组织未能获得任何收益，因为标准GPL协议中这种行为不算分发；一些低劣的云计算厂商甚至根本不回馈社区，加剧了社区和软件本身的分裂</p>
+<p>为了应对这一挑战便出现了AGPL协议（类似的还有SSPL），其最大的特点在于增加了云服务这一块的限制</p>
+<p>回到正题，如果公司进行了第2类改造且改造涉及公司本身业务机密，是否有办法规避这种传染性，毕竟公司的机密代码逻辑一般不能开源</p>
+<h4>GNU的矛盾</h4>
+<p>GNU官方有一个争议问题列表的FAQ</p>
+<p>https://www.gnu.org/licenses/gpl-faq.html</p>
+<p>涉及到这个话题的问题有：</p>
+<ul>
+<li>Can I write free software that uses nonfree libraries</li>
+<li>When is a program and its plug-ins considered a single combined program?</li>
+<li>Does distributing a nonfree driver meant to link with the kernel Linux violate the GPL?</li>
+</ul>
+<p>有兴趣的人可以仔细看下表述，逻辑上并不严密且存在较多模糊不清的情况</p>
+<p>其中很经典的案例：Linux上存在着许多不开源的专有驱动程序</p>
+<p>我们知道Linux是遵循GPL协议发布的，而各硬件厂商基于Linux的内核Header、各种库函数开发了自己的驱动程序模块（.ko）
+内核可在运行时动态加载这些内核模块（modprobe），可以近似认为是一种动态链接技术</p>
+<p>按照GNU的表述，如果是动态链接且相互之间存在着紧密的数据结构、调用交互，则认定为是single combined program
+这种情况下动态链接库也必须遵循GPL；但如果仅仅是单一入口触发（例如动态加载库后调用该库简单的入口函数）则不受限制；</p>
+<p>但以上愿景并未实现，现实世界中仍然存在着大量的、不符合GNU精神的既定事实</p>
+<h4>专业解析</h4>
+<p>考虑到法律和合规的专业性，国外一些大的机构在这方面已经有一些研究，例如美国十大律所之一的morgan lewis专门针对
+这个问题进行了研究解读，原文可参考下列链接，较为专业，值得仔细研读</p>
+<p>https://www.morganlewis.com/-/media/files/publication/presentation/webinar/2021/open-sourcesoftwarerisksandrewards.pdf</p>
+<p>这里简单说下结论</p>
+<p>尽管自由软件基金会（FSF）有着它们自己的看法，但是业界基本共识标准如下：</p>
+<ul>
+<li>静态链接必须遵循GPL</li>
+<li>动态链接不受影响（确保物理上和逻辑上相互独立）</li>
+<li>分发开源软件时允许该软件代码存在着与公司专有代码的联系（例如动态引用，dlsym）</li>
+</ul>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

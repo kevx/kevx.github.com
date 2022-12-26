@@ -1,0 +1,90 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>hive-on-yarn</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <hr />
+<h1>Hive On YARN</h1>
+<h2>概述</h2>
+<p>YARN集群有两种角色：ResourceManager和NodeManager，
+其中RM相当于Hadoop 1.x中的JobTracker，负责任务和资源调度；
+NM则是具体执行job的节点，相当于Hadoop 1.x中的TaskTracker，
+其自身对于每个job所用到的资源做更为细粒度的管理。
+Hadoop 2.x以上的版本均是在YARN平台上构建。</p>
+<h2>YARN集群关键配置</h2>
+<p>首先确保每台机器的环境变量
+    export YARN_CONF_DIR=$HADOOP_CONF_DIR
+然后确保yarn-site.xml文件中含有以下内容</p>
+<pre><code>&lt;property&gt;
+    &lt;name&gt;yarn.resourcemanager.hostname&lt;/name&gt;
+    &lt;value&gt;s4&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+    &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
+    &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+    &lt;name&gt;yarn.nodemanager.aux-services.mapreduce_shuffle.class&lt;/name&gt;
+    &lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;/value&gt;
+&lt;/property&gt;
+</code></pre>
+<p>最后在RM机器上执行yarn resourcemanager
+在NM机器上执行yarn nodemanager
+当机器都启动成功后，可以通过http://[RM]:8088/
+查看集群运行状态，其中[RM]是RM机器的IP或Hostname。</p>
+<h2>Hive</h2>
+<p>在hive官方文档中并未明确说明如何将其与Hadoop2集成在一起；
+如果按照常规方式部署hive，它将以local模式运行，并不能利用
+整个集群的计算能力。</p>
+<p>如果要启用集群模式，需要在Hive中执行下面指令：</p>
+<pre><code>set mapreduce.framework.name=yarn;
+</code></pre>
+<p>可以先省略等号及后面的部分执行，看看当前hive处于哪种模式，
+不出意外的话一般都是'local'。</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

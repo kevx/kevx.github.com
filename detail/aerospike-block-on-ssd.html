@@ -1,0 +1,91 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>aerospike-block-on-ssd</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>Aerospike-SSD存储块结构</h1>
+<h4>BLOCK结构</h4>
+<p>注意以下内容以3.15版本为基准，新版AS可能会有所不同</p>
+<p>我们经常说Aerospike专门针对SSD做了系统性适配和优化，那么最直接的问题便是AS究竟是如何在SSD上存储数据。</p>
+<p>带着这个疑问开始分析源码，主要代码位于drv_ssd.c</p>
+<p>核心数据结构是<code>drv_ssd_block</code>和<code>drv_ssd_bin</code>（结构定义位于<code>drv_ssd.h</code>），前者表示单条记录对应的SSD存储块，本身是一个变长的结构体，后者表示单条记录中的一个BIN</p>
+<p>很显然可以看到单条记录的所有BIN都是紧凑排布在一起的，一图胜千言，如下所示</p>
+<p><img alt="" src="/images/user/as-block-ssd-1.png" /> </p>
+<ul>
+<li>block的bin_offsets指向bins起始偏移</li>
+<li>block的n_bins记录总共有多少bin</li>
+<li>bin的offset指向原始数据的起始偏移</li>
+<li>len记录当前bin原始数据长度</li>
+<li>next指向下一个bin的起始偏移</li>
+</ul>
+<p>可以看出bins几乎是一个扁平的链表，无法支持随机查找</p>
+<p>需要注意每个<code>drv_ssd_block</code>结构体的最大长度不可超过预设的<code>write-block-size</code>值，在这个版本该值最大为1M，在4.x版本最大则为8M</p>
+<p>每个<code>drv_ssd_block</code>写入磁盘时均按<code>MIN_IO_SIZE</code>的整数倍对齐，<code>MIN_IO_SIZE</code>一般为512字节（跟存储设备的逻辑扇区大小一样），
+但某些设备的逻辑扇区和物理扇区大小并不一致，后者远大于前者，这将是一个潜在的性能风险</p>
+<p>AS节点在冷启动时会扫描SSD上所有的记录并据此构建内存中的主索引（参考上面一篇文章）</p>
+<h4>序列和反序列化</h4>
+<p>下面将简述AS如何序列化和反序列化（或许应该换个词语，AS里叫FLAT）不同类型的BIN，AS把BIN的数据称作Particle</p>
+<p>每读到一个BIN时AS会根据BIN DATA的第一个字节来判断类型，例如STRING/BLOB等，解析逻辑位于<code>particle.c</code>的<code>safe_particle_type</code>函数</p>
+<p>然后从一个事先构建好的<code>particle_vtable</code>中找到相应类型的转换函数指针并调用，这里其实是用C实现了一个近似的多态模式，较为简洁而巧妙；
+这些多态函数分别位于不同的模块，以<code>particle_</code>开头的文件中，目前支持的主要有<code>blob/float/geojson/integer/list/map/string</code></p>
+<p>而写入时流程则更为复杂，AS并不是每一条记录都会写磁盘，而是首先将记录放入到一个缓冲区即<code>ssd_write_buffer</code>，简称swb，然后在一定条件下（例如缓冲区满了）再将swb刷写到SSD上，换句话说，相邻时刻的短数据大概率会在同一个swb中（刷到SSD的时候也是紧凑相邻的）；这样做的好处显而易见，可以很好的降低设备的IOPS并最终提升性能</p>
+<p>特别注意的是如果当前待写入的记录大小已经超过swb的剩余空间，则AS会将当前这个swb送入flush等待队列，然后分配一个新的swb；如果这个等待队列过长则AS会抛出<code>DEVICE OVERLOAD</code>异常</p>
+<pre><code>typedef struct {
+    cf_atomic32         rc;
+    cf_atomic32         n_writers;
+    bool                skip_post_write_q;
+    struct drv_ssd_s    *ssd;
+    uint32_t            wblock_id;
+    uint32_t            pos;
+    uint8_t             *buf;
+} ssd_write_buf;
+</code></pre>
+<p>swb的大小不得超过<code>write-block-size</code>（没错，又一次涉及到这个配置），这个值应配置为多少是一个玄学问题，每个厂商每个型号的SSD都可能有差别，这也就是为什么建议事先跑一次ACT测试以便获取真实情况</p>
+<p>随着不同长度的记录的不断插入和更新，SSD上将存在大量数据碎片和空洞，AS会在后台持续运行碎片整理（这个跟SSD固件内部的碎片整理没有任何关系），本文不做展开</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

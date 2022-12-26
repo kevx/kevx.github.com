@@ -1,0 +1,148 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>aerospike-tutorial</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>Aerospike数据库</h1>
+<h3>什么是Aerospike</h3>
+<p>先进的分布式高性能KV数据库！数据库！数据库！一个有着完善商业支持的开源产品，目前提供免费版和商业版；在国内外（尤其是国外）有着较广泛的使用。</p>
+<h3>Aerospike诞生的历史背景</h3>
+<p>对于任何一个存储产品我们需要结合当时特定历史进程去看待和分析，否则就会面临生不逢时的囧况；
+我们现在处在什么样一个时代：</p>
+<ul>
+<li>单机性能面临瓶颈，无论是CPU还是内存，其容量和性能的提升速度大幅下降；</li>
+<li>近年来内存成本急剧上升；</li>
+<li>传统机械磁盘逐步淘汰（尤其在服务器领域）；</li>
+<li>SATA SSD、NVMe SSD等新兴硬件占有比重快速提升；</li>
+<li>互联网等行业飞速发展，访问量、数据量几何级增加；</li>
+</ul>
+<p>计算机基本原理告诉我们，从CPU二级缓存到内存到磁盘，性能是依次降低的，SSD的出现一定程度上填补了内存和磁盘之间的性能鸿沟，
+特别是NVMe SSD，提供了面向新时代的大容量、高带宽、低延迟的硬件基础。</p>
+<p>然而我们的软件呢？</p>
+<p>无论是持久化Redis还是Cassandra等传统NoSQL产品，它们的构造实现思想仍然是基于多年以前的磁盘文件＋文件系统方式；
+虽然没有什么计算机问题是中间层不能解决的，但是中间层越多，额外开销就越大，性能就越差；</p>
+<p>尽管硬件可能性能提升了，但瓶颈开始出现在OS；例如OS提供的各种缓存和IO调度机制如PageCache/IO Scheduler等，
+在落后的SATA磁盘上这将带来较大的硬件提升，但对于新型硬件这层机制在很多场景下会适得其反。</p>
+<p>换句话就是，我们在某种程度上缺乏一种能真正发挥出这些先进硬件性能的存储软件。我们需要尽可能的让数据更靠近硬件。</p>
+<p>在这样一种背景下 Aerospike诞生了。
+Aerospike采用C实现，完全没有GC类问题，最重要一点是它直接使用裸设备，彻底绕过OS文件系统，最大程度发挥硬件性能。</p>
+<h3>我们为什么需要Aerospike</h3>
+<p>很简单，两个关键词：性能、成本；Aerospike提供了接近Redis的读写性能和成千上万倍于Redis的存储空间容量，并保持了一个相对可控的Total Cost of Ownership（TCO）成本。</p>
+<p><strong> 这是历史的必然选择。 </strong></p>
+<h3>特性和功能</h3>
+<p>既然是分布式存储，它必然无法绕过经典的CAP问题，Aerospike提供了AP支持（是的，没错，和Cassandra一样），
+在某些时刻如节点宕机时候，正在更新的数据极小概率会出现少量不一致状态。</p>
+<p>下面是几个常用的存储特性：</p>
+<ul>
+<li>CP<ul>
+<li>Hbase</li>
+<li>MySQL Cluster </li>
+</ul>
+</li>
+<li>AP<ul>
+<li>Cassandra</li>
+<li>Aerospike</li>
+<li>Redis Cluster</li>
+</ul>
+</li>
+</ul>
+<p>详细的情况可以参考 https://www.aerospike.com/docs/architecture/assets/AerospikeACIDSupport.pdf</p>
+<h4>功能特性</h4>
+<ul>
+<li>Aerospike提供丰富和易用的API，支持简单KV、Map、List等数据存储结构，熟悉Redis的同学将会感到十分舒适和惬意；<ul>
+<li>另外支持GeoJSON数据格式，因此可以一定程度满足地理位置检索需求</li>
+</ul>
+</li>
+<li>Aerospike支持服务端批处理操作，例如一个场景中需要先执行append，再执行remove，最后执行get这三个操作，可以在一次API调用中搞定，减少了网络交互次数并提高了数据一致性；</li>
+<li>Aerospike支持服务端脚本，目前支持脚本语言为LUA，这些脚本将直接在服务端运行，可用于实现一些较为复杂的事务性业务逻辑；</li>
+<li>支持集群按Namespace切分；</li>
+<li>还有许多动人的特性请详细查阅官网；</li>
+</ul>
+<h2>性能指标</h2>
+<p>简而言之，在我们3台机器的测试集群上（标准JBOD方式SSD），4K Value长度下的TPS峰值可达100K以上，几乎可以秒杀其它任何一种分布式存储。</p>
+<h2>应用场景</h2>
+<p>尽管Aerospike拥有很多优点，但它并非万金油，如果将其用在不恰当的场景则可能会导致一些困扰。</p>
+<p><strong> 下面几个场景是不合适的 </strong></p>
+<ul>
+<li>极高的数据强一致，宁可牺牲系统可用性，不允许出现任何数据不一致，例如交易或者账务相关；</li>
+<li>单条数据非常长（大于1MB）且不能做拆分的；</li>
+<li>需要按条件做全表扫描的，这是一个典型的SQL场景，不适合使用NoSQL；</li>
+<li>总体数据规模在200T以上的；
+    这一条可能存在一些争议，目前确实没有这种规模的集群运维经验，但宏观架构来看，当数据量到达这个程度的时候你需要考虑这是不是一个数据仓库的需求了；</li>
+<li>信仰某种非Aerospike存储哲学的信徒（所谓道不同不相为谋）；</li>
+</ul>
+<p><strong> 下面几个场景是特别合适的 </strong></p>
+<ul>
+<li>读写量较大（高于1W TPS）且数据量在百T规模以内的Key-Value场景；</li>
+<li>业务发展较快，对扩容要求较高的；</li>
+<li>对性能要求很高且成本敏感的；</li>
+<li>愿意跟上时代步伐的；</li>
+</ul>
+<h2>系统架构</h2>
+<p><img alt="" src="/images/user/asp-1.png" /> 
+<img alt="" src="/images/user/asp-2.png" /></p>
+<h2>硬性限制</h2>
+<p>下表只列出较为重要的限制，完整的限制清单请查阅下面的官方文档；</p>
+<ul>
+<li>单条数据: 1MB</li>
+<li>单分区: 2TB</li>
+<li>单机最大数据条数: 40亿 </li>
+</ul>
+<p>详细参考：https://www.aerospike.com/docs/guide/limitations.html</p>
+<h2>部署和使用</h2>
+<p>Aerospike最低一般3台物理机集群，机器要求配备NVMe SSD（普通SSD也可，但延迟会略有上升）
+标准机器：32C 128G内存  万兆网卡  单机磁盘10T以内  不得有RAID</p>
+<h2>附录</h2>
+<h3>什么是NVMe</h3>
+<p>NVMe其实与AHCI一样都是逻辑设备接口标准，NVMe全称Non-Volatile Memory Express，是使用PCI-E通道的SSD一种规范，NVMe的设计之初就有充分利用到PCI-E SSD的低延时以及并行性，还有当代处理器、平台与应用的并行性。
+现在所用的SATA接口与AHCI标准其实是为高延时的机械硬盘而设计的，目前主流SSD依然继续使用它们，随着SSD的性能逐渐增强，这些标准已经成为限制SSD的一大瓶颈。</p>
+<p>NVMe标准对比AHCI标准的优势，其中之一就是低延时，原生PCI-E通道与CPU直连可以免去SATA与SAS接口的外置控制器（PCH）与CPU通信所带来的延时。
+在软件层方面，NVMe标准的延时只有AHCI的一半不到，NVMe精简了调用方式，执行命令时不需要读取寄存器；而AHCI每条命令则需要读取4次寄存器，一共会消耗8000次CPU循环，从而造成大概2.5微秒的延迟。</p>
+<p>---EOF---</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

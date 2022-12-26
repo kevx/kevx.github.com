@@ -1,0 +1,102 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>lua-jit-64bit-1gb-limit</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>LuaJIT在64位环境下的潜在问题</h1>
+<h4>问题背景和描述</h4>
+<p>我们生产环境有一个数据库支持服务端Lua脚本，近段时间在两台不同机器上出现了总共两次出现进程异常退出，好在生成了coredump，得以有机会窥视内在原因</p>
+<p>错误时的异常堆栈信息如下图所有：</p>
+<p><img alt="" src="/images/user/lua-jit-1.png" /> </p>
+<p>结合代码分析，lua库函数lua_open（其实是一个宏，实际函数是luaL_newstate）返回了NULL，这是一个极不寻常的事情，根据官方极为有限的文档可知，lua_open只可能在内存分配失败的时候返回NULL。因此我们首先考虑到机器内存有问题，运维同学检查后并未发现。</p>
+<h4>问题分析（TL;DR）</h4>
+<p>此时只能继续深入分析Lua库函数本身的实现，以下代码均来自于LuaJIT的库源代码。</p>
+<pre><code>#define lua_open()  luaL_newstate()
+...
+
+/**
+ * Creates a new context (lua_State) populating it with default values.
+ *
+ * @return a new lua_State
+ */
+static lua_State * create_state(context * ctx, const char * filename) {
+    lua_State * l   = NULL;
+
+    l = lua_open();
+    // 这里返回了NULL
+    luaL_openlibs(l);
+
+    ...
+}
+
+LUALIB_API lua_State *luaL_newstate(void)
+{
+    lua_State *L;
+    void *ud = lj_alloc_create(); // 实际上是因为这里返回NULL
+    if (ud == NULL) return NULL;
+    ...
+}
+
+
+void *lj_alloc_create(void)
+{
+  size_t tsize = DEFAULT_GRANULARITY;
+  char *tbase;
+  INIT_MMAP();
+  tbase = (char *)(CALL_MMAP(tsize));
+  if (tbase != CMFAIL) {
+    ...
+  }
+  return NULL;
+}
+</code></pre>
+<p>经过GDB调试，最终发现mmap返回了-1，errno错误码12，查阅内核文档表示<code>ENOMEM 12 Cannot allocate memory</code>，因此这个原因是非常清晰明确的，这里的mmap启用了MAP_32BIT标记，此时内核将只在低32位地址空间内分配内存，尽管32位地址最大寻址允许4GB，但Linux内核当前设计决定了这里实际只有1G地址可用且没有可调性</p>
+<h4>Lua JIT为什么要这么设计？</h4>
+<p>根据官方说法，Lua针对的是小而美场景，不适合运行大型复杂脚本，更不适合创建大量对象，在64位环境下，若不启用MAP_32BIT则Lua的GC性能会受到严重影响</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

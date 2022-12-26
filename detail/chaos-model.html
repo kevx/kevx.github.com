@@ -1,0 +1,83 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>chaos-model</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>混沌工程产品模型</h1>
+<p>混沌工程提倡用一系列实验来真实地验证系统在各类故障场景下的表现，通过频繁地进行大量实验，
+既使得系统本身的反脆弱性持续增强，也让开发者对系统越来越有信心</p>
+<p>在实际生产实践中，我们形成了下面所示的混沌工程产品模型，由“目标、动作、故障、触发器、执行”五个部分组成</p>
+<h3>作用目标（Target）</h3>
+<p>指拥有独立IP的机器端点（Endpoint），例如虚拟机、Pod，也可以是一个特定的集群里的所有节点</p>
+<h3>动作（Action）</h3>
+<p>具体的影响点，其类型是系统内部预先定义好的，常见的包括：</p>
+<ul>
+<li>CPU满载</li>
+<li>网络丢包</li>
+<li>网络不可达（区分上行和下行）</li>
+<li>网卡满载（区分上行和下行）</li>
+<li>磁盘空间写满</li>
+<li>磁盘IOPS达到上限</li>
+<li>进程Hang死和退出</li>
+<li>时间和DNS错误</li>
+</ul>
+<p>每个动作可作用于一个或多个作用目标</p>
+<h3>故障（Incident）</h3>
+<p>经过编排的、由一个或多个动作组成，对系统性能、稳定性有某种影响的行为实体</p>
+<h3>触发器（Trigger）</h3>
+<p>按照配置的时间规则触发某个故障，一般可支持三种时间规则</p>
+<ul>
+<li>定时，即在未来确定的某个时间点触发</li>
+<li>循环，每间隔一段时间触发，总共循环N次</li>
+<li>随机，在未来随机某个时间点触发，总共N次，混乱猴子在此基础上实现</li>
+</ul>
+<p>触发器负责跟踪执行过程、维持执行状态、记录执行结果</p>
+<h3>执行（Execution）</h3>
+<p>触发器实际在目标上执行动作的过程，因此一个触发器可能会关联多次执行</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>

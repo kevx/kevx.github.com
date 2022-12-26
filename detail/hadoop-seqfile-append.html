@@ -1,0 +1,66 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>hadoop-seqfile-append</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>Hadoop Sequncefile 追加模式</h1>
+<p>Sequncefile（以下简称seqfile）是一种可压缩的二进制文件，支持多种
+压缩模式，如Block，Record等，在Hadoop有广泛的使用。但是seqfile
+目前是无法支持append模式，何谓append，即首次创建文件后进行close，
+然后重新打开写。</p>
+<p>这一点是让人匪夷所思的，按照常规思维来说append是非常自然的操作，理应
+被支持。
+在stackoverflow上有人提议，在createWriter的时候传入一个FSOutputStream
+可以规避该问题，事实上该方法是无效的。</p>
+<p>通过查阅SequenceFile.Writer的代码可以看到，每次createWriter
+之后，会写入文件头，不管之前是否已经有文件头。按照seqfile的规范重写一个
+支持append的模块应该也是可行的，不过目前我没有精力做这个事情。</p>
+<p>对于需要实时写入的场景，尽量使用纯文本文件方式。或者按照小时批量一次性
+写入独立文件，最后统一做一次merge操作。</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>
