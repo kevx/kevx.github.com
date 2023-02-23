@@ -1,0 +1,154 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>gcc-atomic-on-aarch64</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <link  rel="stylesheet"  href="/stylesheets/pygment_trac.css">
+        <link  rel="stylesheet"  href="/stylesheets/monokai_sublime.css">
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="/javascripts/highlight.min.js"></script>
+        <meta  name="viewport"  content="width=device-width,initial-scale=1,user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>kevx's Writing</h1>
+                <p>架构 / 云计算 / 技术管理 | kevx@outlook.com 未经授权请勿转载©</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">文章<strong>列表</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <h1>GCC原子操作符在AArch64架构上的指令解析</h1>
+<h3>原子操作符</h3>
+<p>对于多线程应用而言原子操作必不可少，最新的C11标准已经加入了stdatomic.h，从语言层面提供了解决方案。在老版本中GCC原子操作通过builtin函数实现，即以<code>__sync</code>和以<code>__atomic</code>为前缀的函数集，例如：</p>
+<ul>
+<li><code>__sync_lock_test_and_set</code>，ACQUIRE语义，原子set+get</li>
+<li><code>__sync_lock_release</code>，RELEASE语义，原子set</li>
+<li><code>__atomic_test_and_set</code>，单字节类型原子set+get</li>
+<li><code>__atomic_exchange_n</code>，语义可自定义，任意类型原子set+get</li>
+<li>等等</li>
+</ul>
+<p>其中__atomic系列明显与C11标准更为接近一些，提供了标准的内存序相关的语义：</p>
+<ul>
+<li><code>__ATOMIC_RELAXED</code>，宽松，可以认为是不做任何特殊处理</li>
+<li><code>__ATOMIC_SEQ_CST</code>，严格总体有序，保证最终指令严格有序执行，性能会有一定影响</li>
+<li><code>__ATOMIC_ACQUIRE</code>，happens-after语义读，针对当前内存对象的读写操作必然发生在ACQUIRE动作之后</li>
+<li><code>__ATOMIC_RELEASE</code>，happens-before语义写，针对当前内存对象的读写操作必然发生在RELEASE动作之前</li>
+</ul>
+<p>其中，<code>__sync_lock_test_and_set</code>和<code>__atomic_exchange_n</code>从功能上几乎相同，那么实际编译结果会有什么区别？GCC文档并未给出明确说明，但从其代码中可知，<code>__sync</code>系函数本质上实现的是SEQ_CST语义（但实际的实现存在出入）。</p>
+<h3>多个GCC版本中的结果</h3>
+<p>众所周知AArch64是一种弱内存序架构，CPU会对代码流中的指令进行重排，若不加以控制则会产生严重的逻辑错误。程序员必须和编译器一起来保证代码的逻辑正确性，手动在代码控制内存顺序。由于GCC内置了上述支持，这部分工作负担得以减轻。下面的示例代码分别演示了GCC两种原子交换操作：</p>
+<pre><code>#include &lt;stdint.h&gt;
+
+#define xchg(__ptr, __val) __sync_lock_test_and_set(__ptr, __val)
+#define axchg(_target, _value) __atomic_exchange_n(_target, _value, __ATOMIC_RELEASE)
+
+uint32_t g_var;
+
+void fn1() {
+    xchg(&amp;g_var, 1);
+}
+
+void fn2() {
+    axchg(&amp;g_var, 2);
+}
+</code></pre>
+<p>使用GCCv9版本编译后的汇编结果如下：</p>
+<pre><code>0000000000000000 &lt;fn1&gt;:
+   0:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
+   4:   91000000        add     x0, x0, #0x0
+   8:   52800021        mov     w1, #0x1                        // #1
+   c:   885ffc02        ldaxr   w2, [x0]
+  10:   88037c01        stxr    w3, w1, [x0]
+  14:   35ffffc3        cbnz    w3, c &lt;fn1+0xc&gt;
+  18:   d65f03c0        ret
+
+000000000000001c &lt;fn2&gt;:
+  1c:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
+  20:   91000000        add     x0, x0, #0x0
+  24:   52800041        mov     w1, #0x2                        // #2
+  28:   885f7c02        ldxr    w2, [x0]
+  2c:   8803fc01        stlxr   w3, w1, [x0]
+  30:   35ffffc3        cbnz    w3, 28 &lt;fn2+0xc&gt;
+  34:   d65f03c0        ret
+</code></pre>
+<p>两个函数几乎一模一样，关键差异点在于fn1函数中使用<code>ldaxr+stxr</code>实现原子交换；而fn2函数则采用<code>ldxr</code>和<code>stlxr</code>；从ARM官方手册可知，<code>ldaxr</code>自身带有Acquire语义；而<code>stlxr</code>则带有Release语义（因为代码中显式指定）。跟GCC预期不符，这里并未实现total ordering。</p>
+<p>此外，即使是<code>ldaxr+stlxr</code>也并不等同于一个完整的内存屏障，因为它们仅对当前所操作的指针指向的目标内存区域有效，而其它内存区域的操作不受影响，仍然可能会被重排。这种情况下并不能把原子操作当作一个完整意义上的内存屏障使用。</p>
+<p>如果代码逻辑只关心当前所操作的目标对象的逻辑一致性则没有任何问题，否则还是需要传统屏障。这也是老版内核的原子操作函数中存在的一个BUG。</p>
+<p>内核在2014年针对这个问题做过一次修正，详情可以查看 http://lists.infradead.org/pipermail/linux-arm-kernel/2014-February/229588.html</p>
+<p>而GCC自己也意识到了这一问题并在v5.0之后版本中做了修复，参考 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65697</p>
+<p>使用GCCv9版本编译后的汇编结果如下：</p>
+<pre><code>0000000000000000 &lt;fn1&gt;:
+   0:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
+   4:   91000000        add     x0, x0, #0x0
+   8:   52800021        mov     w1, #0x1                        // #1
+   c:   885f7c02        ldxr    w2, [x0]
+  10:   88037c01        stxr    w3, w1, [x0]
+  14:   35ffffc3        cbnz    w3, c &lt;fn1+0xc&gt;
+  18:   d5033bbf        dmb     ish
+  1c:   d503201f        nop
+  20:   d65f03c0        ret
+
+0000000000000024 &lt;fn2&gt;:
+  24:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
+  28:   91000000        add     x0, x0, #0x0
+  2c:   52800041        mov     w1, #0x2                        // #2
+  30:   885ffc02        ldaxr   w2, [x0]
+  34:   8803fc01        stlxr   w3, w1, [x0]
+  38:   35ffffc3        cbnz    w3, 30 &lt;fn2+0xc&gt;
+  3c:   d503201f        nop
+  40:   d65f03c0        ret
+</code></pre>
+<p>可以看到这里load和store操作的内存序语义则全部去掉了，并显式插入了传统的内存屏障，即<code>dmb ish</code>，很显然这会带来一定程度性能上的损耗。</p>
+<p>然而<code>__atomic</code>系函数仍然保持了跟C11标准语义的一致，未插入完整的屏障，可见在新版GCC中<code>__sync</code>系的内存顺序更强，几乎等同于total ordering的效果。</p>
+<h3>ARMv8.1的更新</h3>
+<p>在这个版本的CPU中，ARM增加了原子指令集atomics，我们可以使用lscpu命令查看输出结果Flags中是否包括atomics。注意如果要利用这个指令集，需在编译参数中加入<code>-march=armv8.1-a</code>，产生的汇编结果如下：</p>
+<pre><code>0000000000000000 &lt;fn1&gt;:
+   0:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
+   4:   91000000        add     x0, x0, #0x0
+   8:   52800021        mov     w1, #0x1                        // #1
+   c:   b8a18001        swpa    w1, w1, [x0]
+  10:   d503201f        nop
+  14:   d65f03c0        ret
+
+0000000000000018 &lt;fn2&gt;:
+  18:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
+  1c:   91000000        add     x0, x0, #0x0
+  20:   52800041        mov     w1, #0x2                        // #2
+  24:   b8618001        swpl    w1, w1, [x0]
+  28:   d503201f        nop
+  2c:   d65f03c0        ret
+</code></pre>
+<p>这里省去了load和store操作，仅一条指令完成原子交换操作。如果将<code>__atomic_exchange_n</code>的语义替换为<code>__ATOMIC_SEQ_CST</code>则生成的指令会变为swpal，即同时具有Acquire和Release语义。</p>
+                </div>
+            </section>
+            <section>
+                <a href="/index.html" class="zip_download_link"><b>返回主页</b></a>
+            </section>
+            
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        </script>
+    </body>
+</html>
