@@ -67,7 +67,7 @@ void fn2() {
     axchg(&amp;g_var, 2);
 }
 </code></pre>
-<p>使用GCCv9版本编译后的汇编结果如下：</p>
+<p>使用GCCv4.8版本编译后的汇编结果如下：</p>
 <pre><code>0000000000000000 &lt;fn1&gt;:
    0:   90000000        adrp    x0, 4 &lt;fn1+0x4&gt;
    4:   91000000        add     x0, x0, #0x0
