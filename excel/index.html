@@ -1,0 +1,185 @@
+<!doctype  html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible"  content="chrome=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <title>IRR</title>
+        <link  rel="stylesheet"  href="/stylesheets/styles.css">
+        <style type="text/css">
+            table { border-style: solid; width:600px; border-width: thin; }            
+            thead > tr > td { border-bottom: solid; }
+            input { width: 80px; }
+        </style>
+        <script  src="/javascripts/scale.fix.js"></script>
+        <script  src="/javascripts/jquery-1.12.4.min.js"></script>
+        <script  src="./excel.js"></script>
+        <meta  name="viewport"  content="width=device-width,  initial-scale=1,  user-scalable=no">
+        <!--[if  lt  IE  9]>
+        <script  src="/javascripts/html5-shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div  class="wrapper">
+            <header  class="without-description">
+                <h1>utilities</h1>
+                <p>∫∆</p>
+                <p class="view"><a href="mailto:kevx@outlook.com">Contact Me</a></p>
+                <ul>
+                    <li  class="single">
+                        <a  href="/index.html">返回<strong>首页</strong></a>
+                    </li>
+                </ul>
+            </header>
+            <section>
+                <div id="content">
+                    <table id='main'>
+                        <thead>
+                        <tr>
+                            <td>贷款总额(万)</td>
+                            <td>年利率</td>
+                            <td>期数</td>
+                            <td>首期</td>
+                            <td></td>
+                            <td>其它</td>
+                        </tr>
+                        </thead>
+                        <tr>
+                            
+                            <td><input type="text" id="i-total" value="300"></td>
+                            <td>
+                                <select id="i-ir">
+                                    <option value="0.049">4.9</option>
+                                    <option value="0.0539">5.39</option>
+                                    <option value="0.035">3.5</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select id='i-np'>
+                                    <option value="360">30年</option>
+                                    <option value="120">10年</option>
+                                    <option value="180">15年</option>
+                                    <option value="240">20年</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select id='i-first-y'>
+                                    <option value="2018">2018</option>
+                                    <option value="2019">2019</option>
+                                    <option value="2020">2020</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                </select>
+                               
+                            </td>
+                            <td>
+                                <select id='i-first-m'>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </td>
+                            <td><button onclick="javascript: calc();">calc</button></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    
+                    <br>
+                    <span id='month-fee' class='info'></span>
+                    <span id='curr-cost' class='info'></span>
+                    <table>
+                        <thead>
+                            <tr>
+                                <td>月份</td>
+                                <td>累计还款本金</td>
+                                <td>累计还款利息</td>
+                            </tr>
+                        </thead>
+                        <tbody id='detail'></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <footer>
+            <p>Hosted  on  GitHub  Pages  &mdash;</p>
+        </footer>
+        <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
+        <script type="text/javascript">
+            //Excel.PPMT(ir,3,np,pv)
+            Date.prototype.format = function (fmt) { //author: meizz 
+                var o = {
+                    "M+": this.getMonth() + 1, //月份 
+                    "d+": this.getDate(), //日 
+                    "h+": this.getHours(), //小时 
+                    "m+": this.getMinutes(), //分 
+                    "s+": this.getSeconds(), //秒 
+                    "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+                    "S": this.getMilliseconds() //毫秒 
+                };
+                if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+                for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                return fmt;
+            }
+
+            function calc() {
+                $('#detail').empty();
+                $('.info').html('');
+                var nowstr = new Date().toISOString().substring(0, 7);
+                var first = new Date($('#i-first-y').val() + '-' + $('#i-first-m').val() + '-01');
+                var total = parseFloat($('#i-total').val())*10000;
+                var ir = parseFloat($('#i-ir').val()) / 12.0;
+                var np = parseInt($('#i-np').val());
+
+                var pmt = Math.abs(Excel.PMT(ir, np, total).toFixed(2));
+                $('#month-fee').html('月还款: $0 '.replace('$0', pmt));
+
+                var sum_1 = 0;
+                var sum_2 = 0;
+
+                for (var n = 0; n < np; n++) {
+                    var ppmt = Math.abs(Excel.PPMT(ir, n+1, np, total));
+                    var tr = '<tr>';
+
+                    sum_1 += ppmt;
+                    sum_2 += (pmt - ppmt);
+                    var newdate = new Date(first);
+                    newdate.setMonth(newdate.getMonth() + n);
+                    if (nowstr == newdate.toISOString().substring(0, 7)) {
+                        var str = ' 截至当月已还利息: $1, 已还本金: $2'
+                            .replace('$1', sum_2.toFixed(0))
+                            .replace('$2', sum_1.toFixed(0));
+                        $('#curr-cost').html(str);
+                    }
+
+                    tr += '<td>$0</td>'.replace('$0', newdate.format('yyyy-MM'));
+                    tr += '<td>$0</td>'.replace('$0', sum_1.toFixed(2));
+                    tr += '<td>$0</td>'.replace('$0', sum_2.toFixed(2));
+                    tr += '</tr>';
+                    $('#detail').append(tr);
+                }
+            }
+        </script>
+    </body>
+</html>
