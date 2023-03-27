@@ -9,7 +9,7 @@
         <title>IRR</title>
         <link  rel="stylesheet"  href="/stylesheets/styles.css">
         <style type="text/css">
-            table { border-style: solid; width:600px; border-width: thin; }            
+            table { border-style: solid; width:350px; border-width: thin; }            
             thead > tr > td { border-bottom: solid; }
             input { width: 80px; }
         </style>
@@ -37,17 +37,13 @@
                 <div id="content">
                     <table id='main'>
                         <thead>
-                        <tr>
-                            <td>贷款总额(万)</td>
-                            <td>年利率</td>
-                            <td>期数</td>
-                            <td>首期</td>
-                            <td></td>
-                            <td>其它</td>
-                        </tr>
+                            <tr>
+                                <td>贷款总额(万)</td>
+                                <td>年利率</td>
+                                <td>期数</td>
+                            </tr>
                         </thead>
                         <tr>
-                            
                             <td><input type="text" id="i-total" value="300"></td>
                             <td>
                                 <select id="i-ir">
@@ -64,6 +60,28 @@
                                     <option value="240">20年</option>
                                 </select>
                             </td>
+                        </tr>
+                        <thead>
+                            <tr>
+                                <td>契税(万)</td>
+                                <td>中介费</td>
+                                <td>维修基金</td>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td><input type="text" id="i-tax" value="0"></td>
+                            <td><input type="text" id="i-agent" value="0"></td>
+                            <td><input type="text" id="i-repair" value="0"></td>
+                        </tr>
+                        <thead>
+                            <tr>
+                                
+                                <td>首期还款年份</td>
+                                <td>月份</td>
+                                <td></td>
+                            </tr>
+                        </thead>
+                        <tr>
                             <td>
                                 <select id='i-first-y'>
                                     <option value="2018">2018</option>
@@ -75,7 +93,6 @@
                                     <option value="2024">2024</option>
                                     <option value="2025">2025</option>
                                 </select>
-                               
                             </td>
                             <td>
                                 <select id='i-first-m'>
@@ -93,21 +110,14 @@
                                     <option value="12">12</option>
                                 </select>
                             </td>
-                            <td><button onclick="javascript: calc();">calc</button></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <button onclick="javascript: calc();">计算</button>
+                            </td>
                         </tr>
                     </table>
-                    
-                    <br>
-                    <span id='month-fee' class='info'></span>
-                    <span id='curr-cost' class='info'></span>
+                    <p id='month-fee' class='info'></p>
+                    <p id='curr-cost' class='info'></p>
+                    <p id='cash-cost' class='info'></p>
                     <table>
                         <thead>
                             <tr>
@@ -152,6 +162,10 @@
                 var ir = parseFloat($('#i-ir').val()) / 12.0;
                 var np = parseInt($('#i-np').val());
 
+                var other = (parseInt($('#i-tax').val()) +
+                    parseFloat($('#i-agent').val()) + 
+                    parseFloat($('#i-repair').val())) * 10000;
+
                 var pmt = Math.abs(Excel.PMT(ir, np, total).toFixed(2));
                 $('#month-fee').html('月还款: $0 '.replace('$0', pmt));
 
@@ -171,6 +185,7 @@
                             .replace('$1', sum_2.toFixed(0))
                             .replace('$2', sum_1.toFixed(0));
                         $('#curr-cost').html(str);
+                        other += sum_1;
                     }
 
                     tr += '<td>$0</td>'.replace('$0', newdate.format('yyyy-MM'));
@@ -179,6 +194,9 @@
                     tr += '</tr>';
                     $('#detail').append(tr);
                 }
+                $('#cash-cost').html(
+                    '截至当月总资金成本: $0'.replace('$0', other.toFixed(0))
+                );
             }
         </script>
     </body>
