@@ -39,7 +39,7 @@
                         <thead>
                             <tr>
                                 <td>贷款总额(万)</td>
-                                <td>年利率</td>
+                                <td>贷款年利率</td>
                                 <td>期数</td>
                             </tr>
                         </thead>
@@ -63,15 +63,24 @@
                         </tr>
                         <thead>
                             <tr>
-                                <td>契税(万)</td>
-                                <td>中介费</td>
-                                <td>维修基金</td>
+                                <td>首付(万)</td>
+                                <td>理财年利率</td>
+                                <td>其它费用(万)</td>
                             </tr>
                         </thead>
                         <tr>
-                            <td><input type="text" id="i-tax" value="0"></td>
+                            <td><input type="text" id="i-fund" value="0"></td>
+                            <td>
+                                <select id="i-ir2">
+                                    <option value="0.025">2.5</option>
+                                    <option value="0.03">3.0</option>
+                                    <option value="0.032" selected>3.2</option>
+                                    <option value="0.035">3.5</option>
+                                    <option value="0.04">4.0</option>
+                                    <option value="0.04">4.5</option>
+                                </select>
+                            </td>
                             <td><input type="text" id="i-agent" value="0"></td>
-                            <td><input type="text" id="i-repair" value="0"></td>
                         </tr>
                         <thead>
                             <tr>
@@ -137,37 +146,19 @@
         <!--[if  !IE]><script>fixScale(document);</script><![endif]-->
         <script type="text/javascript">
             //Excel.PPMT(ir,3,np,pv)
-            Date.prototype.format = function (fmt) { //author: meizz 
-                var o = {
-                    "M+": this.getMonth() + 1, //月份 
-                    "d+": this.getDate(), //日 
-                    "h+": this.getHours(), //小时 
-                    "m+": this.getMinutes(), //分 
-                    "s+": this.getSeconds(), //秒 
-                    "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
-                    "S": this.getMilliseconds() //毫秒 
-                };
-                if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-                for (var k in o)
-                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-                return fmt;
-            }
-
             function calc() {
                 $('#detail').empty();
                 $('.info').html('');
-                var nowstr = new Date().toISOString().substring(0, 7);
+                var nowstr = new Date().format('yyyy-MM');
                 var first = new Date($('#i-first-y').val() + '-' + $('#i-first-m').val() + '-01');
-                var total = parseFloat($('#i-total').val())*10000;
+                var total = parseFloat($('#i-total').val()) * 10000;
                 var ir = parseFloat($('#i-ir').val()) / 12.0;
                 var np = parseInt($('#i-np').val());
-
-                var other = (parseInt($('#i-tax').val()) +
-                    parseFloat($('#i-agent').val()) + 
-                    parseFloat($('#i-repair').val())) * 10000;
+                var fund = parseFloat($('#i-fund').val()) * 10000;
+                var other = parseFloat($('#i-agent').val()) * 10000;
 
                 var pmt = Math.abs(Excel.PMT(ir, np, total).toFixed(2));
-                $('#month-fee').html('月还款: $0 '.replace('$0', pmt));
+                $('#month-fee').html('月还款: {0} '.format(pmt));
 
                 var sum_1 = 0;
                 var sum_2 = 0;
@@ -180,22 +171,27 @@
                     sum_2 += (pmt - ppmt);
                     var newdate = new Date(first);
                     newdate.setMonth(newdate.getMonth() + n);
-                    if (nowstr == newdate.toISOString().substring(0, 7)) {
-                        var str = ' 截至当月已还利息: $1, 已还本金: $2'
-                            .replace('$1', sum_2.toFixed(0))
-                            .replace('$2', sum_1.toFixed(0));
+
+                    if (nowstr == newdate.format('yyyy-MM')) {
+                        var fundfv = Excel.FV(
+                            parseFloat($('#i-ir2').val()) / 12.0, 
+                            n, 0, -fund, 0
+                        );
+                        var str = ' 截至当月已还利息: {0}, 已还本金: {1} '
+                            .format(sum_2.toFixed(0), sum_1.toFixed(0));
                         $('#curr-cost').html(str);
-                        other += sum_2;
+                        
+                        other += (sum_2 + fundfv);
                     }
 
-                    tr += '<td>$0</td>'.replace('$0', newdate.format('yyyy-MM'));
-                    tr += '<td>$0</td>'.replace('$0', sum_1.toFixed(2));
-                    tr += '<td>$0</td>'.replace('$0', sum_2.toFixed(2));
+                    tr += '<td>{0}</td>'.format(newdate.format('yyyy-MM'));
+                    tr += '<td>{0}</td>'.format(sum_1.toFixed(2));
+                    tr += '<td>{0}</td>'.format(sum_2.toFixed(2));
                     tr += '</tr>';
                     $('#detail').append(tr);
                 }
                 $('#cash-cost').html(
-                    '截至当月总资金成本: $0'.replace('$0', other.toFixed(0))
+                    '截至当月总资金成本: {0}'.format(other.toFixed(0))
                 );
             }
         </script>
