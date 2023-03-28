@@ -111,7 +111,7 @@
                                 </select>
                             </td>
                             <td>
-                                <button onclick="javascript: calc();">计算</button>
+                                <button onclick="javascript: calc();">计算λ</button>
                             </td>
                         </tr>
                     </table>
@@ -185,7 +185,7 @@
                             .replace('$1', sum_2.toFixed(0))
                             .replace('$2', sum_1.toFixed(0));
                         $('#curr-cost').html(str);
-                        other += sum_1;
+                        other += sum_2;
                     }
 
                     tr += '<td>$0</td>'.replace('$0', newdate.format('yyyy-MM'));
