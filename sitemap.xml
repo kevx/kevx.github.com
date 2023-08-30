@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+  <loc>https://kevx.github.io/detail/2023-macvlan-arp-risk.html</loc>
+  <lastmod>2023-07-20</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/gcc-atomic-on-aarch64.html</loc>
+  <lastmod>2023-02-23</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/lua-jit-64bit-1gb-limit.html</loc>
+  <lastmod>2022-12-08</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/gcc-mid-arch-and-extend.html</loc>
+  <lastmod>2022-11-08</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/jvm-offheap-tracing.html</loc>
+  <lastmod>2022-08-19</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/heterogeneous-mem-model.html</loc>
+  <lastmod>2022-01-27</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/simple-mcode-analysis.html</loc>
+  <lastmod>2022-01-25</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/gpl-risk-in-enterprise.html</loc>
+  <lastmod>2022-01-22</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/aerospike-block-on-ssd.html</loc>
+  <lastmod>2021-12-31</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/aerospike-primary-index.html</loc>
+  <lastmod>2021-12-26</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/build-musl-busybox.html</loc>
+  <lastmod>2021-11-30</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/jdk17-zgc-memory-problem.html</loc>
+  <lastmod>2021-11-04</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/docker-bridge-deep-analysis.html</loc>
+  <lastmod>2021-09-20</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/public-cloud-thinking.html</loc>
+  <lastmod>2021-08-25</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/tunnel-based-kafka-transport.html</loc>
+  <lastmod>2021-07-01</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/quantitative-architecture-analysis.html</loc>
+  <lastmod>2020-06-30</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/chaos-model.html</loc>
+  <lastmod>2019-12-10</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/aerospike-tutorial.html</loc>
+  <lastmod>2017-11-30</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/duitang-dataplatform.html</loc>
+  <lastmod>2015-04-01</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/hdfs-atomic.html</loc>
+  <lastmod>2015-03-21</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/webapp-rpc-optimizing.html</loc>
+  <lastmod>2015-03-16</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/duitang-microservice.html</loc>
+  <lastmod>2015-02-06</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/duitang-base-arch.html</loc>
+  <lastmod>2015-01-10</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/java-invoke-chain.html</loc>
+  <lastmod>2014-12-26</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/hive-on-yarn.html</loc>
+  <lastmod>2014-12-11</lastmod>
+</url>
+<url>
+  <loc>https://kevx.github.io/detail/hadoop-seqfile-append.html</loc>
+  <lastmod>2014-12-02</lastmod>
+</url>
+</urlset>

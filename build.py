@@ -48,4 +48,16 @@ f = open('index.html', 'wb+')
 f.write(final_html.encode('UTF-8'))
 f.close()
 
+#stage 3: build sitemap
+f = open('sitemap.xml', 'w')
+f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+for page in pages:
+    f.write('<url>\n')
+    f.write('  <loc>https://kevx.github.io/detail/%s.html</loc>\n'%(page['id']))
+    f.write('  <lastmod>%s</lastmod>\n'%(page['created'].replace('/', '-')))
+    f.write('</url>\n')
+f.write('</urlset>\n')
+f.close()
+
 print('done!')
