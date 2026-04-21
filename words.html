@@ -625,7 +625,13 @@
                 return cleaned.length ? cleaned.join(' · ') : '—';
             }
 
-            function collectChineseTranslations(translations) {
+            function isEnglishLanguage(language) {
+                const code = String(language?.code || '').toLowerCase();
+                const name = String(language?.name || '').toLowerCase();
+                return code === 'en' || code === 'eng' || name === 'english';
+            }
+
+            function collectChineseMandarinTranslations(translations) {
                 if (!Array.isArray(translations)) {
                     return [];
                 }
@@ -634,7 +640,7 @@
                 translations.forEach((translation) => {
                     const code = String(translation?.language?.code || '').toLowerCase();
                     const name = String(translation?.language?.name || '').toLowerCase();
-                    if (code.startsWith('zh') || name.includes('chinese')) {
+                    if (code.startsWith('zh') || code === 'cmn' || name.includes('chinese') || name.includes('mandarin')) {
                         const word = String(translation?.word || '').trim();
                         if (word) {
                             results.push(word);
@@ -646,7 +652,7 @@
             }
 
             function createSenseCard(sense, index) {
-                const translations = collectChineseTranslations(sense?.translations);
+                const translations = collectChineseMandarinTranslations(sense?.translations);
                 const definition = String(sense?.definition || 'No definition available.');
                 const tags = Array.isArray(sense?.tags) ? sense.tags : [];
                 const examples = Array.isArray(sense?.examples) ? sense.examples.filter(Boolean) : [];
@@ -711,7 +717,7 @@
                                 <span class="sense-definition">${escapeHtml(definition)}</span>
                             </div>
                             <div class="sense-translations">
-                                ${translations.length ? translations.map((translation) => `<span class="pill accent">${escapeHtml(translation)}</span>`).join('') : '<span class="pill">No Chinese translation found</span>'}
+                                ${translations.length ? translations.map((translation) => `<span class="pill accent">${escapeHtml(translation)}</span>`).join('') : '<span class="pill">No Chinese Mandarin translation found</span>'}
                             </div>
                         </summary>
                         <div class="sense-body">
@@ -730,6 +736,10 @@
                 const senses = Array.isArray(entry?.senses) ? entry.senses : [];
                 const synonyms = Array.isArray(entry?.synonyms) ? entry.synonyms : [];
                 const antonyms = Array.isArray(entry?.antonyms) ? entry.antonyms : [];
+
+                if (!isEnglishLanguage(entry?.language)) {
+                    return '';
+                }
 
                 const pronunciationMarkup = pronunciations.length
                     ? `<div class="meta-row">${pronunciations.map((pronunciation) => {
@@ -807,16 +817,18 @@
             }
 
             function renderModalContent(word, payload) {
-                const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+                const entries = Array.isArray(payload?.entries)
+                    ? payload.entries.filter((entry) => isEnglishLanguage(entry?.language))
+                    : [];
                 const source = payload?.source || {};
                 const sourceLicense = source?.license?.name ? `${source.license.name}` : 'Wiktionary source';
                 const sourceUrl = source?.url ? `${source.url}` : 'FreeDictionary API';
 
                 elements.modalTitle.textContent = word;
-                elements.modalSubtitle.textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} found. Chinese translations only are shown inside each sense.`;
+                elements.modalSubtitle.textContent = `${entries.length} English entr${entries.length === 1 ? 'y' : 'ies'} found. Chinese Mandarin translations are shown inside each sense.`;
 
                 if (!entries.length) {
-                    renderModalEmpty(word, 'The lookup succeeded, but the API returned no entries.');
+                    renderModalEmpty(word, 'The lookup succeeded, but the API returned no English entries.');
                     return;
                 }
 
@@ -840,7 +852,7 @@
                 renderModalLoading(word);
 
                 try {
-                    const response = await fetch(`https://freedictionaryapi.com/api/v1/entries/all/${encodeURIComponent(word)}?translations=true`, {
+                    const response = await fetch(`https://freedictionaryapi.com/api/v1/entries/en/${encodeURIComponent(word)}?translations=true`, {
                         signal: controller.signal,
                     });
 
