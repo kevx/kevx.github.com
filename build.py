@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import csv
 import markdown
 import os,sys,json
 
@@ -7,9 +8,54 @@ f = open('tpl-config.json')
 cfg = json.loads(f.read())
 f.close()
 
+source_csv = '/mnt/d/documents/BNC_COCA_lists.csv'
+resource_js = 'data/bnc-coa-4k-10k.js'
+level_map = {
+    '4k': '4000',
+    '5k': '5000',
+    '6k': '6000',
+    '7k': '7000',
+    '8k': '8000',
+    '9k': '9000',
+    '10k': '10000',
+}
+
+
+def build_word_resource():
+    if not os.path.exists(source_csv):
+        print('source csv not found, skipping word resource extraction')
+        return
+
+    lists = {value: [] for value in level_map.values()}
+    with open(source_csv, newline='', encoding='utf-8-sig') as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        for row in reader:
+            if not row or len(row) < 2:
+                continue
+            level = row[0].strip()
+            headword = row[1].strip()
+            mapped_level = level_map.get(level)
+            if mapped_level and headword:
+                lists[mapped_level].append(headword)
+
+    payload = {
+        'levelOrder': list(level_map.values()),
+        'levelLabels': {value: value for value in level_map.values()},
+        'lists': lists,
+    }
+
+    with open(resource_js, 'w', encoding='utf-8') as f:
+        f.write('window.BNC_COA_DATA = ' + json.dumps(payload, ensure_ascii=False, separators=(',', ':')) + ';\n')
+
+    print('building word resource')
+
+
+build_word_resource()
+
 
 pages = sorted(cfg['items'], key=lambda item: item['created'], reverse=True)
-files = os.listdir('data')
+files = [fname for fname in os.listdir('data') if fname.endswith('.md')]
 
 #stage 1: build details
 print('building detail pages')
